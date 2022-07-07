@@ -1,0 +1,22 @@
+body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  font-family: sans-serif;
+  color: rgba(0, 0, 0, 0.77);
+}
+
+.tooltip{
+  background-color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px;
+  opacity: 0;
+  transition: 0.5s;
+}
+
+.tooltip.active{
+  opacity: 1;
+}

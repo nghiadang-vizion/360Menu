@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=UTF-8 />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+  </head>
+  <body>
+
+    <div class="tooltip">Demo</div>
+
+    <script type="module">
+      import * as THREE from './build/three.module.js';
+      import { OrbitControls } from './js/OrbitControls.js';
+      import { FlakesTexture } from './js/FlakesTexture.js';
+      import { RGBELoader } from './js/RGBELoader.js';
+
+      let scene, camera, renderer, controls, pointlight;
+      const container = document.body;
+      const tooltip = document.querySelector('.tooltip')
+      let toolActive = false;
+
+      function init() {
+        scene = new THREE.Scene();
+
+        renderer = new THREE.WebGLRenderer({alpha:true,antialias:true});
+        renderer.setSize(window.innerWidth,window.innerHeight);
+        container.appendChild(renderer.domElement);
+
+        // renderer.outputEncoding = THREE.sRGBEncoding;
+        // renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        // renderer.toneMappingExposure = 1.25;
+
+        camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,1,1000);
+        camera.position.set(-1,0,1);
+        controls = new OrbitControls(camera, renderer.domElement);
+
+        // controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.5;
+        controls.enableDamping = true;
+        controls.enableZoom = false;
+
+        // pointlight = new THREE.PointLight(0xffffff,1);
+        // pointlight.position.set(200,200,200);
+        // scene.add(pointlight);
+
+        let envmaploader = new THREE.PMREMGenerator(renderer);
+
+        // new RGBELoader().setPath('textures/').load('cayley_interior_4k.hdr', function(hdrmap) {
+
+        //   let envmap = envmaploader.fromCubemap(hdrmap);
+        //   let texture = new THREE.CanvasTexture(new FlakesTexture());
+        //   texture.wrapS = THREE.RepeatWrapping;
+        //   texture.wrapT = THREE.RepeatWrapping;
+        //   texture.repeat.x = 10;
+        //   texture.repeat.y = 6;
+
+        //   const ballMaterial = {
+        //     clearcoat: 1.0,
+        //     cleacoatRoughness:1,
+        //     metalness: 1,
+        //     roughness:1,
+        //     color: 'gray',
+        //     normalMap: texture,
+        //     normalScale: new THREE.Vector2(0,0),
+        //     envMap: envmap.texture
+        //   };
+
+        //   let ballGeo = new THREE.SphereGeometry(50,32,32);
+        //   let ballMat = new THREE.MeshPhysicalMaterial();
+        //   let ballMesh = new THREE.Mesh(ballGeo,ballMat);
+        //   scene.add(ballMesh);
+
+        //   animate();
+
+        // });
+        let ballGeo = new THREE.SphereGeometry(100,32,32);
+        // let ballMat = new THREE.MeshPhysicalMaterial();
+        const texture =  new THREE.TextureLoader().load( 'textures/northcliff.jpg' );
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.repeat.x = -1;
+        let ballMat = new THREE.MeshBasicMaterial({
+          map: texture,
+          side: THREE.DoubleSide,
+        });
+        let ballMesh = new THREE.Mesh(ballGeo,ballMat);
+        scene.add(ballMesh);
+
+        function addTooltip(position, name) {
+          let map = new THREE.TextureLoader().load( 'img/menu.png' );
+          let material = new THREE.SpriteMaterial( { map: map } );
+
+          let sprite = new THREE.Sprite( material );
+          sprite.name = name
+          sprite.position.copy(position.clone().normalize().multiplyScalar(30));
+          sprite.scale.multiplyScalar(2)
+          scene.add( sprite );
+        }
+
+        function onResize() {
+          renderer.setSize(window.innerWidth,window.innerHeight)
+          camera.aspect = window.innerWidth/window.innerHeight
+          camera.updateProjectionMatrix()
+        }
+
+        const rayCaster = new THREE.Raycaster();
+
+        function onclick(e) {
+          let mouse = new THREE.Vector2(( e.clientX / window.innerWidth ) * 2 - 1,- ( e.clientY / window.innerHeight ) * 2 + 1);
+          rayCaster.setFromCamera(mouse,camera);
+          let intersects = rayCaster.intersectObjects( scene.children );
+          intersects.forEach(function (intersect) {
+            if (intersect.object.type === 'Sprite') {
+              console.log(intersect.object.name)
+            }
+          })
+          // let intersects = rayCaster.intersectObject(ballMesh);
+          // if (intersects.length > 0) {
+          //   console.log(intersects[0].point);
+          //   addTooltip(intersects[0].point);
+          // }
+          // debugger
+        }
+        function onMouseMove(e) {
+          let mouse = new THREE.Vector2(( e.clientX / window.innerWidth ) * 2 - 1,- ( e.clientY / window.innerHeight ) * 2 + 1);
+          rayCaster.setFromCamera(mouse,camera);
+          let foundSprite = false;
+          let intersects = rayCaster.intersectObjects( scene.children );
+          intersects.forEach(function (intersect) {
+            if (intersect.object.type === 'Sprite') {
+              let p = intersect.object.position.clone().project(camera);
+              console.log(p)
+              tooltip.style.top = ((-1 * p.y + 1) * window.innerHeight /2) + 'px';
+              tooltip.style.left = ((p.x +2 ) * window.innerHeight /2) + 'px';
+              tooltip.classList.add('active');
+              toolActive = true;
+              foundSprite = true;
+
+            }
+          })
+          if (foundSprite === false && toolActive) {
+            tooltip.classList.remove('active');
+          }
+        }
+        addTooltip(new THREE.Vector3 (-4.420648133092449,33.945512552766665,-93.49929162862449), 'ulatr');
+        window.addEventListener('resize',onResize)
+        container.addEventListener('click', onclick)
+        container.addEventListener('mousemove', onMouseMove)
+        animate();
+      }
+      function animate() {
+        controls.update();
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+      init();
+    </script>
+  </body>
+</html>
