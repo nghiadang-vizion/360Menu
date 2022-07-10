@@ -32,7 +32,6 @@
         createScene (scene){
           this.scene = scene;
           let ballGeo = new THREE.SphereGeometry(100,32,32);
-          // let plane = new THREE.PlaneGeometry( 1, 1 );
           const texture =  new THREE.TextureLoader().load(this.image);
           texture.wrapS = THREE.RepeatWrapping;
           texture.repeat.x = -1;
@@ -40,11 +39,8 @@
             map: texture,
             side: THREE.DoubleSide,
           });
-          // material.transparent = true;
           this.sphere = new THREE.Mesh(ballGeo,material);
-          // this.plane = new THREE.Mesh(plane,material);
           this.scene.add(this.sphere);
-          // this.scene.add(this.plane);
           this.points.forEach(this.addTooltip.bind(this));
         }
 
@@ -59,8 +55,45 @@
             side: THREE.DoubleSide,
           });
           this.plane = new THREE.Mesh(plane,material);
-          
-          this.scene.add(this.plane);
+          // this.scene.add(this.plane);
+          this.points.forEach(this.addTooltip.bind(this));
+        }
+
+        createBox(scene){
+          this.scene = scene;
+          let cube = new THREE.BoxGeometry( 300, 300, 300);
+          // const texture =  new THREE.TextureLoader().load('img/hinh1.jpg');
+          // texture.wrapS = THREE.RepeatWrapping;
+          // texture.repeat.x = 1;
+          let cubeMaterials = [
+            new THREE.MeshBasicMaterial({
+              map:  new THREE.TextureLoader().load('textures/saigon.jpg'),
+              side:  THREE.DoubleSide
+            }),
+            new THREE.MeshBasicMaterial({
+              map: new THREE.TextureLoader().load('textures/hanoi.jpg'),
+              side: THREE.DoubleSide,
+            }),
+            new THREE.MeshBasicMaterial({
+              map: new THREE.TextureLoader().load('textures/hoian.jpg'),
+              side: THREE.DoubleSide,
+            }),
+            new THREE.MeshBasicMaterial({
+              map: new THREE.TextureLoader().load('textures/danang.jpg'),
+              side: THREE.DoubleSide,
+            }),
+            new THREE.MeshBasicMaterial({
+              map: new THREE.TextureLoader().load('textures/hue.jpg'),
+              side: THREE.DoubleSide,
+            }),
+            new THREE.MeshBasicMaterial({
+              map: new THREE.TextureLoader().load('textures/dalat.jpg'),
+              side: THREE.DoubleSide,
+            })
+          ]
+          let face = new THREE.MeshFaceMaterial(cubeMaterials);
+          this.cube = new THREE.Mesh(cube,face);
+          this.scene.add(this.cube);
           this.points.forEach(this.addTooltip.bind(this));
         }
 
@@ -80,7 +113,7 @@
           this.sprites.push(sprite);
           sprite.onclick = () => {
             this.destroy()
-            point.scene.createScene(scene);
+            point.scene.createBox(scene);
             point.scene.appear();
           }
         }
@@ -105,18 +138,19 @@
         }
 
         appear(){
-          this.sphere.material.opacity = 0;
-          TweenLite.to(this.sphere.material, 1, {
-            opacity: 1,
-          })
+          // this.sphere.material.opacity = 0;
+          // TweenLite.to(this.sphere.material, 1, {
+          //   opacity: 1,
+          // })
           this.sprites.forEach((sprite) => {
             sprite.scale.set(0,0,0)
             TweenLite.to(sprite.scale, 1, {
             x:2,
             y:2,
             z:2
+            })
           })
-          })
+          
         }
       }
 
@@ -143,20 +177,27 @@
         let envmaploader = new THREE.PMREMGenerator(renderer);
 
         let s = new Scene('./textures/northcliff.jpg', camera)
-        let s2 = new Scene('./textures/kloofendal_38d_partly_cloudy.jpg', camera)
-        let menu = new Scene(camera)
+        // let s2 = new Scene('./textures/kloofendal_38d_partly_cloudy.jpg', camera)
+        // let menu = new Scene(camera)
+        let cube = new Scene(camera)
         s.addPoint({
           position: new THREE.Vector3 (-4.420648133092449,33.945512552766665,-93.49929162862449),
           name: 'ulatr',
-          scene: s2
+          scene: cube
         })
-        s2.addPoint({
+        cube.addPoint({
           position: new THREE.Vector3 (-4.420648133092449,33.945512552766665,-93.49929162862449),
           name: 'ulatr',
           scene: s
         })
+        // s2.addPoint({
+        //   position: new THREE.Vector3 (-4.420648133092449,33.945512552766665,-93.49929162862449),
+        //   name: 'ulatr',
+        //   scene: s
+        // })
         s.createScene(scene);
-        s.createPlane(scene);
+        // s.createPlane(scene);
+        s.createBox(scene);
         s.appear();
 
         function onResize() {
@@ -169,7 +210,7 @@
 
         function onclick(e) {
           let mouse = new THREE.Vector2(( e.clientX / window.innerWidth ) * 2 - 1,- ( e.clientY / window.innerHeight ) * 2 + 1);
-          console.log(mouse);
+          // console.log(mouse);
           rayCaster.setFromCamera(mouse,camera);
           let intersects = rayCaster.intersectObjects( scene.children );
           intersects.forEach(function (intersect) {
@@ -187,8 +228,8 @@
           intersects.forEach(function (intersect) {
             if (intersect.object.type === 'Sprite') {
               let p = intersect.object.position.clone().project(camera);
-              tooltip.style.top = ((-1 * p.y + 1) * window.innerHeight /2) + 'px';
-              tooltip.style.left = ((p.x +2 ) * window.innerHeight /2) + 'px';
+              tooltip.style.top = (window.innerHeight /2) + 'px';
+              tooltip.style.left = (window.innerWidth /2) + 'px';
               tooltip.classList.add('active');
               tooltip.innerHTML = intersect.object.name;
               spriteActive = intersect.object;
