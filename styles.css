@@ -22,3 +22,18 @@ body {
   opacity: 0;
   transform: translate3d(-50%, calc(-100% -4px), 0);
 }
+
+.closeMenu a img,
+.openMenu a img{
+  width: 50px;
+  position: fixed;
+  margin: 20px;
+}
+
+.openMenu.noActive{
+  display: none;
+}
+
+.closeMenu.noActive{
+  display: none;
+}

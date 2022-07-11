@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset=UTF-8 />
-    <link rel="stylesheet" type="text/css" href="styles.css" />
-  </head>
-  <body>
+<head>
+  <meta charset=UTF-8 />
+  <link rel="stylesheet" type="text/css" href="styles.css" />
+</head>
+<body>
 
     <div class="tooltip"></div>
+    <div class="openMenu" >
+      <a href="#" >
+        <img src="./img/menu.png" alt="" >
+      </a>
+    </div>
+    <div class="closeMenu noActive" >
+      <a href="#" >
+        <img src="./img/kindpng_679412.png" alt="" >
+      </a>
+    </div>
 
     <script src="./js/TweenLite.min.js"></script>
     <script type="module">
@@ -17,7 +27,9 @@
 
       let scene, camera, renderer, controls, pointlight;
       const container = document.body;
-      const tooltip = document.querySelector('.tooltip')
+      const tooltip = document.querySelector('.tooltip');
+      const openBtn = document.querySelector('.openMenu');
+      const closeBtn = document.querySelector('.closeMenu');
       let spriteActive = false;
 
       class Scene {
@@ -42,6 +54,9 @@
           this.sphere = new THREE.Mesh(ballGeo,material);
           this.scene.add(this.sphere);
           this.points.forEach(this.addTooltip.bind(this));
+          this.points.forEach(this.openTooltop.bind(this));
+          this.points.forEach(this.closeTooltop.bind(this));
+          
         }
 
         createPlane(scene){
@@ -93,7 +108,7 @@
           ]
           let face = new THREE.MeshFaceMaterial(cubeMaterials);
           this.cube = new THREE.Mesh(cube,face);
-          this.scene.add(this.cube);
+          // this.scene.add(this.cube);
           this.points.forEach(this.addTooltip.bind(this));
         }
 
@@ -101,55 +116,52 @@
           this.points.push(point);
         }
 
-        addTooltip(point) {
-          let spriteMap = new THREE.TextureLoader().load( 'img/menu.png' );
-          let spriteMaterial = new THREE.SpriteMaterial( { map: spriteMap } );
-
+        addTooltip(point,scene) {
+          let spriteMap = new THREE.TextureLoader().load( 'textures/hanoi.jpg' );
+          let spriteMaterial = new THREE.SpriteMaterial( { 
+            map: spriteMap,
+            // visible: false
+          } );
           let sprite = new THREE.Sprite( spriteMaterial );
-          sprite.name = point.name;
-          sprite.position.copy(point.position.clone().normalize().multiplyScalar(30));
+          sprite.scale.set(0,0,0);
+          sprite.position.copy(point.position.clone().normalize().multiplyScalar(5));
           sprite.scale.multiplyScalar(2)
-          this.scene.add( sprite );
+          this.scene.add(sprite);
           this.sprites.push(sprite);
-          sprite.onclick = () => {
-            this.destroy()
-            point.scene.createBox(scene);
-            point.scene.appear();
+        }
+
+        openTooltop(){
+          openBtn.onclick = () =>{
+            console.log('open')
+            this.sprites.forEach((sprite) => {
+              sprite.scale.set(0,0,0)
+              TweenLite.to(sprite.scale, 1, {
+                x:4,
+                y:4,
+                z:4
+              })
+            })
+          }
+        }
+
+        closeTooltop(){
+          closeBtn.onclick = () => {
+            console.log('close')
+            this.sprites.forEach((sprite) => {
+            TweenLite.to(sprite.scale, 1, {
+            x:0,
+            y:0,
+            z:0
+          })
+          })
           }
         }
 
         destroy(){
-          TweenLite.to(this.sphere.material, 1, {
-            opacity: 0,
-            onComplete: () => {
-              this.scene.remove(this.sphere);
-            }
-          })
-          this.sprites.forEach((sprite) => {
-            TweenLite.to(sprite.scale, 1, {
-            x:0,
-            y:0,
-            z:0,
-            onComplete: () => {
-              this.scene.remove(sprite);
-            }
-          })
-          })
+          
         }
 
         appear(){
-          // this.sphere.material.opacity = 0;
-          // TweenLite.to(this.sphere.material, 1, {
-          //   opacity: 1,
-          // })
-          this.sprites.forEach((sprite) => {
-            sprite.scale.set(0,0,0)
-            TweenLite.to(sprite.scale, 1, {
-            x:2,
-            y:2,
-            z:2
-            })
-          })
           
         }
       }
@@ -170,34 +182,17 @@
         controls.enableDamping = true;
         controls.enableZoom = false;
 
-        // pointlight = new THREE.PointLight(0xffffff,1);
-        // pointlight.position.set(200,200,200);
-        // scene.add(pointlight);
-
         let envmaploader = new THREE.PMREMGenerator(renderer);
 
         let s = new Scene('./textures/northcliff.jpg', camera)
-        // let s2 = new Scene('./textures/kloofendal_38d_partly_cloudy.jpg', camera)
-        // let menu = new Scene(camera)
-        let cube = new Scene(camera)
+        // let cube = new Scene(camera)
         s.addPoint({
-          position: new THREE.Vector3 (-4.420648133092449,33.945512552766665,-93.49929162862449),
+          position: new THREE.Vector3 (120,7,-93.49929162862449),
           name: 'ulatr',
-          scene: cube
+          // scene: cube
         })
-        cube.addPoint({
-          position: new THREE.Vector3 (-4.420648133092449,33.945512552766665,-93.49929162862449),
-          name: 'ulatr',
-          scene: s
-        })
-        // s2.addPoint({
-        //   position: new THREE.Vector3 (-4.420648133092449,33.945512552766665,-93.49929162862449),
-        //   name: 'ulatr',
-        //   scene: s
-        // })
         s.createScene(scene);
-        // s.createPlane(scene);
-        s.createBox(scene);
+        // s.addTooltip(scene);
         s.appear();
 
         function onResize() {
@@ -209,43 +204,49 @@
         const rayCaster = new THREE.Raycaster();
 
         function onclick(e) {
-          let mouse = new THREE.Vector2(( e.clientX / window.innerWidth ) * 2 - 1,- ( e.clientY / window.innerHeight ) * 2 + 1);
-          // console.log(mouse);
-          rayCaster.setFromCamera(mouse,camera);
-          let intersects = rayCaster.intersectObjects( scene.children );
-          intersects.forEach(function (intersect) {
-            if (intersect.object.type === 'Sprite') {
-              intersect.object.onclick();
-            }
-          })
-          
-        }
-        function onMouseMove(e) {
-          let mouse = new THREE.Vector2(( e.clientX / window.innerWidth ) * 2 - 1,- ( e.clientY / window.innerHeight ) * 2 + 1);
-          rayCaster.setFromCamera(mouse,camera);
-          let foundSprite = false;
-          let intersects = rayCaster.intersectObjects( scene.children );
-          intersects.forEach(function (intersect) {
-            if (intersect.object.type === 'Sprite') {
-              let p = intersect.object.position.clone().project(camera);
-              tooltip.style.top = (window.innerHeight /2) + 'px';
-              tooltip.style.left = (window.innerWidth /2) + 'px';
-              tooltip.classList.add('active');
-              tooltip.innerHTML = intersect.object.name;
-              spriteActive = intersect.object;
-              foundSprite = true;
-            }
-          })
-          if (foundSprite === false && spriteActive) {
-            tooltip.classList.remove('active');
-            spriteActive = false;    
+          // let mouse = new THREE.Vector2(( e.clientX / window.innerWidth ) * 2 - 1,- ( e.clientY / window.innerHeight ) * 2 + 1);
+          // rayCaster.setFromCamera(mouse,camera);
+          // let intersects = rayCaster.intersectObjects( scene.children );
+          // intersects.forEach(function (intersect) {
+          //   if (intersect.object.type === 'Sprite') {
+          //     intersect.object.onclick();
+          //     this.sprite.spriteMaterial =  new THREE.SpriteMaterial({visible: true});
+          //   }
+          // })
+          if (e.target.tagName === 'IMG') {
+            closeBtn.classList.toggle('noActive');
+            openBtn.classList.toggle('noActive')
           }
         }
+
+        // function onMouseMove(e) {
+        //   let mouse = new THREE.Vector2(( e.clientX / window.innerWidth ) * 2 - 1,- ( e.clientY / window.innerHeight ) * 2 + 1);
+        //   rayCaster.setFromCamera(mouse,camera);
+        //   let foundSprite = false;
+        //   let intersects = rayCaster.intersectObjects( scene.children );
+        //   intersects.forEach(function (intersect) {
+        //     if (intersect.object.type === 'Sprite') {
+        //       let p = intersect.object.position.clone().project(camera);
+        //       tooltip.style.top = (window.innerHeight /2) + 'px';
+        //       tooltip.style.left = (window.innerWidth /2) + 'px';
+        //       tooltip.classList.add('active');
+        //       tooltip.innerHTML = intersect.object.name;
+        //       spriteActive = intersect.object;
+        //       foundSprite = true;
+        //     }
+        //   })
+        //   if (foundSprite === false && spriteActive) {
+        //     tooltip.classList.remove('active');
+        //     spriteActive = false;    
+        //   }
+        // }
+        
         window.addEventListener('resize',onResize)
         container.addEventListener('click', onclick)
-        container.addEventListener('mousemove', onMouseMove)
+        // container.addEventListener('mousemove', onMouseMove)
         animate();
       }
+      
       function animate() {
         controls.update();
         renderer.render(scene, camera);
