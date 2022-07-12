@@ -1,7 +1,7 @@
 import * as THREE from 'https://unpkg.com/three@0.127.0/build/three.module.js';
-import { OrbitControls } from '../js/OrbitControls.js';
-import { FlakesTexture } from '../js/FlakesTexture.js';
-import { RGBELoader } from '../js/RGBELoader.js';
+import { OrbitControls } from './js/OrbitControls.js';
+import { FlakesTexture } from './js/FlakesTexture.js';
+import { RGBELoader } from './js/RGBELoader.js';
 
 let scene, camera, renderer, controls, pointlight;
 const container = document.body;
@@ -95,7 +95,7 @@ addPoint (point){
 }
 
 addTooltip(point,scene) {
-    let spriteMap = new THREE.TextureLoader().load( '../textures/hanoi.jpg' );
+    let spriteMap = new THREE.TextureLoader().load( './textures/hanoi.jpg' );
     let spriteMaterial = new THREE.SpriteMaterial( { 
     map: spriteMap,
     // visible: false
@@ -162,7 +162,7 @@ controls.enableZoom = false;
 
 let envmaploader = new THREE.PMREMGenerator(renderer);
 
-let s = new Scene('../textures/northcliff.jpg', camera)
+let s = new Scene('./textures/northcliff.jpg', camera)
 // let cube = new Scene(camera)
 s.addPoint({
     position: new THREE.Vector3 (120,7,-93.49929162862449),
