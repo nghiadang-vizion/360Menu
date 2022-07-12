@@ -1,4 +1,4 @@
-import * as THREE from 'https://unpkg.com/three@0.127.0/build/three.module.js';
+import * as THREE from './js/three.module.js';
 import { OrbitControls } from './js/OrbitControls.js';
 import { FlakesTexture } from './js/FlakesTexture.js';
 import { RGBELoader } from './js/RGBELoader.js';
