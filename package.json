@@ -1,0 +1,23 @@
+{
+  "name": "360menu---copy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "gh-pages -d dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nghiadang-vizion/360Menu.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nghiadang-vizion/360Menu/issues"
+  },
+  "homepage": "https://github.com/nghiadang-vizion/360Menu#readme",
+  "dependencies": {
+    "gh-pages": "^4.0.0"
+  }
+}
